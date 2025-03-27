@@ -19,44 +19,44 @@ AttentionLayerOutput DeviceBase::attentionLayer(const AttentionLayerParams& para
     const auto context_token_num = params.common.context_token_num;
     const auto h_token_num = context_token_num + generate_batch_size;
 
-    RUNTIME_ASSERT_OP_ARG(!params.residual, "default attention layer impl does not support residual!");
+    // RUNTIME_ASSERT_OP_ARG(!params.residual, "default attention layer impl does not support residual!");
 
     const auto& layer_kv_cache = params.common.kv_cache;
     if (layer_kv_cache) {
         const auto &kv_cache = layer_kv_cache.value();
         const auto &kv_cache_block_id = *kv_cache.kv_cache_block_id;
         const auto &shape = kv_cache.kv_cache_block_id->shape();
-        RUNTIME_ASSERT_OP_ARG(
-            ((shape.size() == 2) && (shape[0] == input_lengths.shape()[0])),
-            "kv_cache_block_id shape in attention layer should be [batch_size, block_length]"
-            ", but got %s", kv_cache_block_id.debugString().c_str());
-        RUNTIME_ASSERT_OP_ARG(
-                kv_cache.k_cache_buffer && kv_cache.v_cache_buffer,
-                "kv cache buffer should has value when use kv_cache_block_id");
+        // RUNTIME_ASSERT_OP_ARG(
+        //     ((shape.size() == 2) && (shape[0] == input_lengths.shape()[0])),
+        //     "kv_cache_block_id shape in attention layer should be [batch_size, block_length]"
+        //     ", but got %s", kv_cache_block_id.debugString().c_str());
+        // RUNTIME_ASSERT_OP_ARG(
+        //         kv_cache.k_cache_buffer && kv_cache.v_cache_buffer,
+        //         "kv cache buffer should has value when use kv_cache_block_id");
         const auto& k_cache_shape = kv_cache.k_cache_buffer->shape();
         const auto& v_cache_shape = kv_cache.v_cache_buffer->shape();
-        RUNTIME_ASSERT_OP_ARG(
-                ((k_cache_shape.size() == 4) && (v_cache_shape.size() == 4) && \
-                 (k_cache_shape[0] == v_cache_shape[0]) && (k_cache_shape[1] == v_cache_shape[1]) && \
-                 (k_cache_shape[2] == v_cache_shape[2]) && (k_cache_shape[3] == v_cache_shape[3]) && \
-                 (k_cache_shape[1] == params.configs.kv_head_num) && \
-                 (k_cache_shape[2] == params.configs.tokens_per_block) && \
-                 (k_cache_shape[3] == params.configs.size_per_head)),
-                "kv cache buffer check shape failed. k_cache_buffer: %s, v_cache_buffer: %s",
-                kv_cache.k_cache_buffer->debugString().c_str(),
-                kv_cache.v_cache_buffer->debugString().c_str());
+        // RUNTIME_ASSERT_OP_ARG(
+        //         ((k_cache_shape.size() == 4) && (v_cache_shape.size() == 4) && \
+        //          (k_cache_shape[0] == v_cache_shape[0]) && (k_cache_shape[1] == v_cache_shape[1]) && \
+        //          (k_cache_shape[2] == v_cache_shape[2]) && (k_cache_shape[3] == v_cache_shape[3]) && \
+        //          (k_cache_shape[1] == params.configs.kv_head_num) && \
+        //          (k_cache_shape[2] == params.configs.tokens_per_block) && \
+        //          (k_cache_shape[3] == params.configs.size_per_head)),
+        //         "kv cache buffer check shape failed. k_cache_buffer: %s, v_cache_buffer: %s",
+        //         kv_cache.k_cache_buffer->debugString().c_str(),
+        //         kv_cache.v_cache_buffer->debugString().c_str());
         if (kv_cache.k_scale_buffer) {
             const auto& k_scale_shape = kv_cache.k_scale_buffer->shape();
             const auto& v_scale_shape = kv_cache.v_scale_buffer->shape();
-            RUNTIME_ASSERT_OP_ARG(
-                    ((k_scale_shape.size() == 3) && (v_scale_shape.size() == 3) && \
-                     (k_scale_shape[0] == v_scale_shape[0]) && (k_scale_shape[1] == v_scale_shape[1]) && \
-                     (k_scale_shape[2] == v_scale_shape[2]) && (k_cache_shape[0] == k_scale_shape[0]) && \
-                     (k_scale_shape[1] == params.configs.kv_head_num) && \
-                     (k_scale_shape[2] == params.configs.tokens_per_block)),
-                    "kv scale check buffer failed. k_scale_buffer: %s, v_scale_buffer: %s",
-                    kv_cache.k_scale_buffer->debugString().c_str(),
-                    kv_cache.v_scale_buffer->debugString().c_str());
+            // RUNTIME_ASSERT_OP_ARG(
+            //         ((k_scale_shape.size() == 3) && (v_scale_shape.size() == 3) && \
+            //          (k_scale_shape[0] == v_scale_shape[0]) && (k_scale_shape[1] == v_scale_shape[1]) && \
+            //          (k_scale_shape[2] == v_scale_shape[2]) && (k_cache_shape[0] == k_scale_shape[0]) && \
+            //          (k_scale_shape[1] == params.configs.kv_head_num) && \
+            //          (k_scale_shape[2] == params.configs.tokens_per_block)),
+            //         "kv scale check buffer failed. k_scale_buffer: %s, v_scale_buffer: %s",
+            //         kv_cache.k_scale_buffer->debugString().c_str(),
+            //         kv_cache.v_scale_buffer->debugString().c_str());
         }
     }
 
@@ -110,7 +110,7 @@ AttentionLayerOutput DeviceBase::attentionLayer(const AttentionLayerParams& para
     if (layer_kv_cache) {
         params.common.kv_cache->kv_cache_block_id = kv_cache_block_id;
     }
-    printBufferData(*qkv_output, "qkv_output");
+    // printBufferData(*qkv_output, "qkv_output");
 
     if(params.qscheme != QScheme::NoQuantize && params.qscheme != QScheme::Qfp8PerTensor) {
         OptionalConstBufferRef smoother_weight =

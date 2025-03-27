@@ -1,5 +1,10 @@
+#include <string>
+#include <cstdint>
+
 #if defined(__x86_64__)
 #include <immintrin.h>
+#elif defined(__aarch64__)
+#include "device/arm_impl/type_bf16/hie_bfloat16.hpp"
 #endif
 
 #if USING_CUDA
@@ -7,9 +12,14 @@
 #include <cuda_bf16.h>
 #endif
 
+#if USING_ROCM
+#include "rocm/cuda_shims.h"
+#endif
 #ifdef ENABLE_FP8
 #include <cuda_fp8.h>
 #endif
+
+#include "core/type.h"
 
 namespace lytransformer {
 
@@ -28,7 +38,7 @@ namespace lytransformer {
     F(DataType::TYPE_BYTES, char); \
     F(DataType::TYPE_STR, std::string);
 
-#if USING_CUDA
+#if USING_CUDA || USING_ROCM
 #define FT_FOREACH_DEVICE_TYPE(F) \
     F(DataType::TYPE_FP16, half); \
     F(DataType::TYPE_BF16, __nv_bfloat16);
@@ -83,8 +93,8 @@ FT_FOREACH_DEVICE_TYPE(DEFINE_TYPE);
     DEFINE_TYPE(DataType::TYPE_FP8_E4M3, __nv_fp8_e4m3);
 #endif
 
-DEFINE_TYPE(DataType::TYPE_UINT64, unsigned long long int);
-DECLARE_GET_TYPE(void);
+// DEFINE_TYPE(DataType::TYPE_UINT64, unsigned long long int);
+// DECLARE_GET_TYPE(void);
 
 size_t getTypeSize(DataType type) {
 #define CASE(DT, T) { \
@@ -136,5 +146,7 @@ size_t getTypeBits(DataType type) {
     }
 #undef CASE
 }
+
+
 } // namespace lytransformer
 

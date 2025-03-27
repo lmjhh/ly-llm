@@ -4,7 +4,7 @@
 #include <functional>
 #include <sstream>
 #include <memory>
-// #include <torch/python.h>
+#include <torch/python.h>
 
 #include "core/buffer.h"
 #include "core/qbuffer.h"

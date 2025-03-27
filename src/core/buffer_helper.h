@@ -20,10 +20,10 @@ BufferPtr vector2Buffer(const std::vector<T>& vec) {
 
 template<typename T>
 std::vector<T> buffer2vector(const Buffer& src, size_t size) {
-    FT_CHECK_WITH_INFO((src.size() >= size),
-        "buffer size [%d] is less than size [%d]", src.size(), size);
-    FT_CHECK_WITH_INFO((src.typeSize() == sizeof(T)),
-        "Buffer type size %d is not equal to size of T: %d", src.typeSize(), sizeof(T));
+    // FT_CHECK_WITH_INFO((src.size() >= size),
+    //     "buffer size [%d] is less than size [%d]", src.size(), size);
+    // FT_CHECK_WITH_INFO((src.typeSize() == sizeof(T)),
+    //     "Buffer type size %d is not equal to size of T: %d", src.typeSize(), sizeof(T));
     std::vector<T> dst;
     auto           total_size = size * sizeof(T);
     dst.resize(size);
@@ -37,9 +37,9 @@ std::vector<T> buffer2vector(const Buffer& src) {
 }
 
 inline void BUFFER_DTYPE_CHECK(const Buffer& buffer, std::vector<DataType> dtypes) {
-    FT_CHECK_WITH_INFO(
-        (std::find(dtypes.begin(), dtypes.end(), buffer.type()) != dtypes.end()),
-        "buffer type[%d] is invalid", buffer.type());
+    // FT_CHECK_WITH_INFO(
+    //     (std::find(dtypes.begin(), dtypes.end(), buffer.type()) != dtypes.end()),
+    //     "buffer type[%d] is invalid", buffer.type());
 }
 
 #define BUFFER_GET_SCALE_IF_Q_BUFFER(buf) \

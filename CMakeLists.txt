@@ -18,17 +18,19 @@ endif()
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
 # 查找 PyTorch 的 CMake 配置
-#find_package(Torch REQUIRED)
+set(CMAKE_PREFIX_PATH /Users/lianyu/libtorch)
+find_package(Torch REQUIRED)
+find_package(Python COMPONENTS Development REQUIRED)
 
 file(GLOB_RECURSE SRC_FILES "src/*.cc")
 
 # 添加可执行文件
-add_executable(${PROJECT_NAME} src/main.cpp src/device/cpu_impl/cpu_device.cc)
+add_executable(${PROJECT_NAME} ${SRC_FILES})
 
 # 添加头文件目录
 target_include_directories(${PROJECT_NAME} PRIVATE src)
 # 将 PyTorch 的头文件路径添加到目标
-#target_include_directories(${PROJECT_NAME} PRIVATE ${TORCH_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PRIVATE ${TORCH_INCLUDE_DIRS} ${Python_INCLUDE_DIRS})
 
 # 链接 PyTorch 库
 #target_link_libraries(my_program PRIVATE ${TORCH_LIBRARIES})

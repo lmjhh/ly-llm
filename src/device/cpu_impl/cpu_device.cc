@@ -9,7 +9,7 @@
 // #include "xlytransformer/include/layers_gemm.h"
 #include <cstring>
 #include <cmath>
-#include <immintrin.h>
+// #include <immintrin.h>
 
 #define BLOCKSIZE_512b_FP32 16  // 512 bit include 16 * 32bit
 #define BLOCKSIZE_512b_BF16 32  // 512 bit include 32 * 16bit
@@ -52,39 +52,39 @@ LayernormOutput CpuDevice::layernorm(const LayernormParams& params) {
     const auto  eps       = params.eps;
 
     LayernormOutput layernorm_out;
-    layernorm_out.output = allocateBuffer({data_type, {size_t(rows), size_t(cols)}, AllocationType::HOST}, {});
+    // layernorm_out.output = allocateBuffer({data_type, {size_t(rows), size_t(cols)}, AllocationType::HOST}, {});
 
-    xft::DataType xft_dt;
-    if (data_type == TYPE_FP32) {
-        xft_dt = xft::DataType::fp32;
-    } else if (data_type == TYPE_BF16) {
-        xft_dt = xft::DataType::bf16;
-    } else {
-        throw OpException(OpErrorType::ERROR_UNIMPLEMENTED);
-    }
+    // xft::DataType xft_dt;
+    // if (data_type == TYPE_FP32) {
+    //     xft_dt = xft::DataType::fp32;
+    // } else if (data_type == TYPE_BF16) {
+    //     xft_dt = xft::DataType::bf16;
+    // } else {
+    //     throw OpException(OpErrorType::ERROR_UNIMPLEMENTED);
+    // }
 
-    if (norm_type == NormType::layernorm) {
-        invokeLayerNorm(xft_dt,
-                        layernorm_out.output->data(),
-                        (const void*)(input->data()),
-                        (const void*)(gamma),
-                        (const void*)(beta),
-                        rows,
-                        cols,
-                        -1,
-                        -1,
-                        eps);
-    } else if (norm_type == NormType::rmsnorm) {
-        invokeRmsNorm(xft_dt,
-                      layernorm_out.output->data(),
-                      (const void*)(input->data()),
-                      (const void*)(gamma),
-                      rows,
-                      cols,
-                      -1,
-                      -1,
-                      eps);
-    }
+    // if (norm_type == NormType::layernorm) {
+    //     invokeLayerNorm(xft_dt,
+    //                     layernorm_out.output->data(),
+    //                     (const void*)(input->data()),
+    //                     (const void*)(gamma),
+    //                     (const void*)(beta),
+    //                     rows,
+    //                     cols,
+    //                     -1,
+    //                     -1,
+    //                     eps);
+    // } else if (norm_type == NormType::rmsnorm) {
+    //     invokeRmsNorm(xft_dt,
+    //                   layernorm_out.output->data(),
+    //                   (const void*)(input->data()),
+    //                   (const void*)(gamma),
+    //                   rows,
+    //                   cols,
+    //                   -1,
+    //                   -1,
+    //                   eps);
+    // }
     return layernorm_out;
 }
 
@@ -103,22 +103,22 @@ BufferPtr CpuDevice::gemm(const GemmParams& params) {
     int n = transB ? params.B.shape()[dim - 2] : params.B.shape()[dim - 1];
 
     BufferPtr output;
-    if (params.D) {
-        output = params.D;
-    } else {
-        output = allocateBuffer({data_type, {size_t(m), size_t(n)}, AllocationType::HOST});
-    }
+    // if (params.D) {
+    //     output = params.D;
+    // } else {
+    //     output = allocateBuffer({data_type, {size_t(m), size_t(n)}, AllocationType::HOST});
+    // }
 
-    xft::DataType xft_dt;
-    if (data_type == TYPE_FP16) {
-        xft_dt = xft::DataType::fp16;
-    } else if (data_type == TYPE_BF16) {
-        xft_dt = xft::DataType::bf16;
-    } else {
-        throw OpException(OpErrorType::ERROR_UNIMPLEMENTED);
-    }
+    // xft::DataType xft_dt;
+    // if (data_type == TYPE_FP16) {
+    //     xft_dt = xft::DataType::fp16;
+    // } else if (data_type == TYPE_BF16) {
+    //     xft_dt = xft::DataType::bf16;
+    // } else {
+    //     throw OpException(OpErrorType::ERROR_UNIMPLEMENTED);
+    // }
 
-    xft::invokeGemm(xft_dt, transA, transB, m, n, k, 1.0, A, k, B, 0.0, output->data(), n);
+    // xft::invokeGemm(xft_dt, transA, transB, m, n, k, 1.0, A, k, B, 0.0, output->data(), n);
 
     return output;
 }
@@ -135,18 +135,18 @@ BufferPtr CpuDevice::embeddingLookup(const EmbeddingLookupParams& params) {
     const auto hidden_size = embedding_table.shape()[1];
     const auto data_type   = embedding_table.type();
 
-    xft::DataType xft_dt;
-    if (data_type == TYPE_FP16) {
-        xft_dt = xft::DataType::fp16;
-    } else if (data_type == TYPE_BF16) {
-        xft_dt = xft::DataType::bf16;
-    } else {
-        throw OpException(OpErrorType::ERROR_UNIMPLEMENTED);
-    }
+    // xft::DataType xft_dt;
+    // if (data_type == TYPE_FP16) {
+    //     xft_dt = xft::DataType::fp16;
+    // } else if (data_type == TYPE_BF16) {
+    //     xft_dt = xft::DataType::bf16;
+    // } else {
+    //     throw OpException(OpErrorType::ERROR_UNIMPLEMENTED);
+    // }
 
     BufferPtr emb_out = allocateBuffer({DataType::TYPE_FP32, {token_num, hidden_size}, AllocationType::HOST}, {});
 
-    invokeTokenEmbedding(xft_dt, emb_out->data(), tokens.data(), embedding_table.data(), token_num, hidden_size);
+    // invokeTokenEmbedding(xft_dt, emb_out->data(), tokens.data(), embedding_table.data(), token_num, hidden_size);
     return emb_out;
 }
 
@@ -204,52 +204,52 @@ AttentionLayerOutput CpuDevice::attentionLayer(const AttentionLayerParams& param
         static_cast<float*>(aligned_alloc(64, batch_size * input_seq_len * hidden_size * sizeof(float)));
     memset(rms_atten_output, 0, batch_size * input_seq_len * hidden_size * sizeof(float));
 
-    invokeAttentionLLaMA(xft::DataType::fp16,
-                         batch_size,
-                         input_seq_len,
-                         head_dim,
-                         head_num,
-                         kv_head_num,
-                         max_positions,
-                         max_pos_embed,
-                         past_seq_len,
-                         current_seq_len,
-                         step,
-                         hidden_size,
-                         rms_atten_output,
-                         hidden_size,
-                         (const void*)input.data(),
-                         hidden_size,
-                         qkv_data_ptr,
-                         qkv_data_ptr + q_size,
-                         qkv_data_ptr + q_size + kv_size,
-                         output_weight->data());
+    // invokeAttentionLLaMA(xft::DataType::fp16,
+    //                      batch_size,
+    //                      input_seq_len,
+    //                      head_dim,
+    //                      head_num,
+    //                      kv_head_num,
+    //                      max_positions,
+    //                      max_pos_embed,
+    //                      past_seq_len,
+    //                      current_seq_len,
+    //                      step,
+    //                      hidden_size,
+    //                      rms_atten_output,
+    //                      hidden_size,
+    //                      (const void*)input.data(),
+    //                      hidden_size,
+    //                      qkv_data_ptr,
+    //                      qkv_data_ptr + q_size,
+    //                      qkv_data_ptr + q_size + kv_size,
+    //                      output_weight->data());
 
     AttentionLayerOutput atten_out;
-    atten_out.hidden_states = allocateBuffer(
-        {DataType::TYPE_FP32, {size_t(batch_size * input_seq_len), size_t(hidden_size)}, AllocationType::HOST}, {});
+//     atten_out.hidden_states = allocateBuffer(
+//         {DataType::TYPE_FP32, {size_t(batch_size * input_seq_len), size_t(hidden_size)}, AllocationType::HOST}, {});
 
-    /* If not add rmsnorm then need following extra process */
-    float* input_ptr      = static_cast<float*>(input.data());
-    int    total_elements = batch_size * input_seq_len * hidden_size;
-    int    num_iterations = total_elements / BLOCKSIZE_512b_FP32;  // AVX-512 could process 16 * float
+//     /* If not add rmsnorm then need following extra process */
+//     float* input_ptr      = static_cast<float*>(input.data());
+//     int    total_elements = batch_size * input_seq_len * hidden_size;
+//     int    num_iterations = total_elements / BLOCKSIZE_512b_FP32;  // AVX-512 could process 16 * float
 
-#pragma omp parallel for
-    for (int i = 0; i < num_iterations; ++i) {
-        const __m512 rms_vec        = _mm512_loadu_ps(&rms_atten_output[i * BLOCKSIZE_512b_FP32]);
-        const __m512 input_vec      = _mm512_loadu_ps(&input_ptr[i * BLOCKSIZE_512b_FP32]);
-        const __m512 result         = _mm512_sub_ps(rms_vec, input_vec);
-        float*       atten_out_data = static_cast<float*>(atten_out.hidden_states->data());
-        _mm512_storeu_ps(&atten_out_data[i * BLOCKSIZE_512b_FP32], result);
-    }
+// #pragma omp parallel for
+//     for (int i = 0; i < num_iterations; ++i) {
+//         const __m512 rms_vec        = _mm512_loadu_ps(&rms_atten_output[i * BLOCKSIZE_512b_FP32]);
+//         const __m512 input_vec      = _mm512_loadu_ps(&input_ptr[i * BLOCKSIZE_512b_FP32]);
+//         const __m512 result         = _mm512_sub_ps(rms_vec, input_vec);
+//         float*       atten_out_data = static_cast<float*>(atten_out.hidden_states->data());
+//         _mm512_storeu_ps(&atten_out_data[i * BLOCKSIZE_512b_FP32], result);
+//     }
 
-    for (int i = num_iterations * BLOCKSIZE_512b_FP32; i < total_elements; ++i) {
-        atten_out.hidden_states->data<float>()[i] = rms_atten_output[i] - input_ptr[i];
-    }
+//     for (int i = num_iterations * BLOCKSIZE_512b_FP32; i < total_elements; ++i) {
+//         atten_out.hidden_states->data<float>()[i] = rms_atten_output[i] - input_ptr[i];
+//     }
 
-    /* If not add rmsnorm then need above extra process */
+//     /* If not add rmsnorm then need above extra process */
 
-    free(rms_atten_output);
+//     free(rms_atten_output);
     return atten_out;
 }
 
@@ -260,14 +260,14 @@ FfnLayerOutput CpuDevice::ffnLayer(const FfnLayerParams& params) {
     const auto& down_weight = *(params.weights.down_weight->kernel);
 
     const auto          act_t = params.configs.activation_type;
-    xft::ActivationType at;
-    if (act_t == ActivationType::Swiglu) {  // gated-silu
-        at = xft::ActivationType::SILU;
-    } else if (act_t == ActivationType::Geglu) {  // gated-gelu
-        at = xft::ActivationType::GELU;
-    } else {
-        throw std::runtime_error("Not supported");
-    }
+    // xft::ActivationType at;
+    // if (act_t == ActivationType::Swiglu) {  // gated-silu
+    //     at = xft::ActivationType::SILU;
+    // } else if (act_t == ActivationType::Geglu) {  // gated-gelu
+    //     at = xft::ActivationType::GELU;
+    // } else {
+    //     throw std::runtime_error("Not supported");
+    // }
 
     const int token_num   = input.shape()[0];
     const int inter_size  = gate_weight.shape()[1];
@@ -276,40 +276,40 @@ FfnLayerOutput CpuDevice::ffnLayer(const FfnLayerParams& params) {
     float* rms_output = static_cast<float*>(aligned_alloc(64, token_num * hidden_size * sizeof(float)));
     memset(rms_output, 0, token_num * hidden_size * sizeof(float));
 
-    xft::invokeMLPLLaMA(xft::DataType::fp16,
-                        at,
-                        token_num,
-                        hidden_size,
-                        inter_size,
-                        rms_output,
-                        hidden_size,
-                        input.data(),
-                        hidden_size,
-                        gate_weight.data(),
-                        up_weight.data(),
-                        down_weight.data());
+    // xft::invokeMLPLLaMA(xft::DataType::fp16,
+    //                     at,
+    //                     token_num,
+    //                     hidden_size,
+    //                     inter_size,
+    //                     rms_output,
+    //                     hidden_size,
+    //                     input.data(),
+    //                     hidden_size,
+    //                     gate_weight.data(),
+    //                     up_weight.data(),
+    //                     down_weight.data());
 
     FfnLayerOutput ffnout;
-    ffnout.hidden_states =
-        allocateBuffer({DataType::TYPE_FP32, {size_t(token_num), size_t(hidden_size)}, AllocationType::HOST}, {});
+//     ffnout.hidden_states =
+//         allocateBuffer({DataType::TYPE_FP32, {size_t(token_num), size_t(hidden_size)}, AllocationType::HOST}, {});
 
-    /* If not add rmsnorm then need following extra process */
-    float*    input_ptr      = static_cast<float*>(input.data());
-    const int total_elements = token_num * hidden_size;
-    const int num_iterations = total_elements / BLOCKSIZE_512b_FP32;  // AVX-512 could process 16 * float
+//     /* If not add rmsnorm then need following extra process */
+//     float*    input_ptr      = static_cast<float*>(input.data());
+//     const int total_elements = token_num * hidden_size;
+//     const int num_iterations = total_elements / BLOCKSIZE_512b_FP32;  // AVX-512 could process 16 * float
 
-#pragma omp parallel for
-    for (int i = 0; i < num_iterations; ++i) {
-        const __m512 rms_vec     = _mm512_loadu_ps(&rms_output[i * BLOCKSIZE_512b_FP32]);
-        const __m512 input_vec   = _mm512_loadu_ps(&input_ptr[i * BLOCKSIZE_512b_FP32]);
-        const __m512 result      = _mm512_sub_ps(rms_vec, input_vec);
-        float*       ffnout_data = static_cast<float*>(ffnout.hidden_states->data());
-        _mm512_storeu_ps(&ffnout_data[i * BLOCKSIZE_512b_FP32], result);
-    }
+// #pragma omp parallel for
+//     for (int i = 0; i < num_iterations; ++i) {
+//         const __m512 rms_vec     = _mm512_loadu_ps(&rms_output[i * BLOCKSIZE_512b_FP32]);
+//         const __m512 input_vec   = _mm512_loadu_ps(&input_ptr[i * BLOCKSIZE_512b_FP32]);
+//         const __m512 result      = _mm512_sub_ps(rms_vec, input_vec);
+//         float*       ffnout_data = static_cast<float*>(ffnout.hidden_states->data());
+//         _mm512_storeu_ps(&ffnout_data[i * BLOCKSIZE_512b_FP32], result);
+//     }
 
-    for (int i = num_iterations * BLOCKSIZE_512b_FP32; i < total_elements; ++i) {
-        ffnout.hidden_states->data<float>()[i] = rms_output[i] - input_ptr[i];
-    }
+//     for (int i = num_iterations * BLOCKSIZE_512b_FP32; i < total_elements; ++i) {
+//         ffnout.hidden_states->data<float>()[i] = rms_output[i] - input_ptr[i];
+//     }
 
     /* If not add rmsnorm then need above extra process */
 
@@ -329,6 +329,6 @@ AllReduceOutput CpuDevice::allReduce(const AllReduceParams& params) {
     throw OpException(OpErrorType::ERROR_UNIMPLEMENTED);
 }
 
-RTP_LLM_REGISTER_DEVICE(Cpu);
+// RTP_LLM_REGISTER_DEVICE(Cpu);
 
 }  // namespace lytransformer

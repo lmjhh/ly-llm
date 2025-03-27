@@ -1,9 +1,9 @@
-#include "devices/device_base.h"
+#include "device/device_base.h"
 
 namespace lytransformer {
 
 GroupedGemmOutput DeviceBase::groupedGemm(const GroupedGemmParams& params) {
-    FT_LOG_DEBUG("use default group gemm");
+    // FT_LOG_DEBUG("use default group gemm");
     params.check();
     size_t num = params.A.size();
     std::vector<BufferPtr> output(num);

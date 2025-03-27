@@ -12,15 +12,15 @@ QBuffer::QBuffer(BufferPtr kernel,
                         kernel->data(),
                         std::move(kernel->deleter_))
 {
-    FT_CHECK_WITH_INFO(
-       (kernel.use_count() == 1 &&
-        scales.use_count() == 1 &&
-        zeros.use_count() == 1),
-        "kerenl[%d], scales[%d] and zeros[%d] buffers need to have no ref cout.",
-        kernel.use_count(),
-        scales.use_count(),
-        zeros.use_count()
-    );
+    // FT_CHECK_WITH_INFO(
+    //    (kernel.use_count() == 1 &&
+    //     scales.use_count() == 1 &&
+    //     zeros.use_count() == 1),
+    //     "kerenl[%d], scales[%d] and zeros[%d] buffers need to have no ref cout.",
+    //     kernel.use_count(),
+    //     scales.use_count(),
+    //     zeros.use_count()
+    // );
 
     scales_.swap(scales);
     zeros_.swap(zeros);
@@ -29,24 +29,24 @@ QBuffer::QBuffer(BufferPtr kernel,
     zeros.reset();
 
     type_ = BufferDtype2QBufferDtype(type_);
-    FT_CHECK_WITH_INFO((type_ != DataType::TYPE_INVALID),
-        "kerenl buffer datatype[%d] must be int8 or int4x2.", type_
-    );
+    // FT_CHECK_WITH_INFO((type_ != DataType::TYPE_INVALID),
+    //     "kerenl buffer datatype[%d] must be int8 or int4x2.", type_
+    // );
 
-    FT_CHECK_WITH_INFO(
-        ((scales_->dim() == 1 || scales_->dim() == 2 || scales_->dim() == 3) &&
-         (zeros_->dim() == 1 || zeros_->dim() == 2 || zeros_->dim() == 3)),
-        "dim of scales[%d] and zero_points[%d] must be 1, 2, 3.",
-        scales_->dim(), zeros_->dim()
-    );
+    // FT_CHECK_WITH_INFO(
+    //     ((scales_->dim() == 1 || scales_->dim() == 2 || scales_->dim() == 3) &&
+    //      (zeros_->dim() == 1 || zeros_->dim() == 2 || zeros_->dim() == 3)),
+    //     "dim of scales[%d] and zero_points[%d] must be 1, 2, 3.",
+    //     scales_->dim(), zeros_->dim()
+    // );
 
 
-    FT_CHECK_WITH_INFO(
-        (scales_->where() == zeros_->where() &&
-         scales_->where() == where()),
-        "scales[%d] and zeros[%d] must in same memory.",
-        scales_->where(), zeros_->where()
-    );
+    // FT_CHECK_WITH_INFO(
+    //     (scales_->where() == zeros_->where() &&
+    //      scales_->where() == where()),
+    //     "scales[%d] and zeros[%d] must in same memory.",
+    //     scales_->where(), zeros_->where()
+    // );
 
 };
 

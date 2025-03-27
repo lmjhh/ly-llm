@@ -29,7 +29,7 @@ LoraLinearOutput DeviceBase::loraLinear(const LoraLinearParams& params) {
         }
         if (inputs.size() > 0) {
             if (params.lora_input->use_same_lora_) {
-                FT_LOG_DEBUG("use same lora");
+                // FT_LOG_DEBUG("use same lora");
                 auto tmp = gemm({params.gemm_params.A, *lora_as[0]});
                 auto result = gemm({*tmp,
                                     *lora_bs[0],

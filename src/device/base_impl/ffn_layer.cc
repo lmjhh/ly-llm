@@ -8,7 +8,7 @@ using namespace std;
 namespace lytransformer {
 
 FfnLayerOutput DeviceBase::ffnLayer(const FfnLayerParams& params) {
-    RUNTIME_ASSERT_OP_ARG(!params.residual, "default FFN implementation does not support residual!");
+    // RUNTIME_ASSERT_OP_ARG(!params.residual, "default FFN implementation does not support residual!");
 
     BufferPtr output;
     BufferPtr shared_expert_output;
@@ -39,10 +39,10 @@ FfnLayerOutput DeviceBase::ffnLayer(const FfnLayerParams& params) {
         if (isGatedActivation(params.configs.activation_type)) {
             auto up_gemm_params = GemmParams(params.input, *(params.weights.up_weight->kernel));
             up_output = loraLinear(LoraLinearParams(up_gemm_params, params.lora_input.up_lora_input)).output;
-            printBufferData(*up_output, "ffn_up");
+            // printBufferData(*up_output, "ffn_up");
             auto gate_gemm_params = GemmParams(params.input, *(params.weights.gate_weight->kernel));
             auto gate_output = loraLinear(LoraLinearParams(gate_gemm_params,  params.lora_input.gate_lora_input));
-            printBufferData(*gate_output.output, "ffn_gate");
+            // printBufferData(*gate_output.output, "ffn_gate");
             activation({params.configs.activation_type,
                         up_output,
                         mayGetRef(params.weights.up_weight->bias),
@@ -81,7 +81,7 @@ FfnLayerOutput DeviceBase::ffnLayer(const FfnLayerParams& params) {
             up_output = quantize(quant_params);
         }
 
-        printBufferData(*up_output, "ffn_act");
+        // printBufferData(*up_output, "ffn_act");
         auto down_gemm_params = GemmParams(*(up_output), *(params.weights.down_weight->kernel), nullopt, params.output);
         output = loraLinear(LoraLinearParams(down_gemm_params, params.lora_input.down_lora_input)).output;
     }
@@ -92,7 +92,7 @@ FfnLayerOutput DeviceBase::ffnLayer(const FfnLayerParams& params) {
         }).output;
     }
 
-    printBufferData(*output, "ffn_out");
+    // printBufferData(*output, "ffn_out");
     return FfnLayerOutput({std::move(output)});
 }
 

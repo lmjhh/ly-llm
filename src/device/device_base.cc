@@ -2,17 +2,17 @@
 // #include "ATen/ops/cross_entropy_loss.h"
 // #include "c10/util/Optional.h"
 // #include "core/TrackerAllocator.h"
-// #include "core/torch_utils/BufferTorchUtils.h"
+#include "util/buffer_torch_util.h"
 // #include "maga_transformer/cpp/utils/KVCacheUtils.h"
 // #include "maga_transformer/cpp/utils/ErrorCode.h"
 // #include "maga_transformer/cpp/utils/RpcErrorCode.h"
 #include "device/op_data.h"
-// #include "torch/extension.h"
-// #include "torch/types.h"
+#include "torch/extension.h"
+#include "torch/types.h"
 #include <numeric>
 
 using namespace std;
-using namespace rtp_llm;
+// using namespace rtp_llm;
 
 namespace lytransformer {
 
@@ -32,9 +32,9 @@ void DeviceBase::setTraceMemory(bool trace_memory) {
     buffer_manager_->setTraceMemory(trace_memory);
 }
 
-std::shared_ptr<rtp_llm::CacheStore> DeviceBase::cacheStore() {
-    return cache_store_;
-}
+// std::shared_ptr<rtp_llm::CacheStore> DeviceBase::cacheStore() {
+//     return cache_store_;
+// }
 
 MemoryStatus DeviceBase::getDeviceMemoryStatus() {
     return MemoryStatus();
@@ -55,8 +55,8 @@ DeviceStatus DeviceBase::getDeviceStatus() {
 }
 
 void DeviceBase::traceMemoryUsage() {
-    FT_LOG_INFO("Device Memory: %s", buffer_manager_->printAllocationRecords(getAllocator()).c_str());
-    FT_LOG_INFO("Host Memory: %s", buffer_manager_->printAllocationRecords(getHostAllocator()).c_str());
+    // FT_LOG_INFO("Device Memory: %s", buffer_manager_->printAllocationRecords(getAllocator()).c_str());
+    // FT_LOG_INFO("Host Memory: %s", buffer_manager_->printAllocationRecords(getHostAllocator()).c_str());
     return;
 }
 
@@ -108,84 +108,84 @@ DeviceEventPtr DeviceBase::createEvent() {
     throw OpException(OpErrorType::ERROR_UNIMPLEMENTED);
 }
 
-void DeviceBase::setCacheStore(std::shared_ptr<rtp_llm::CacheStore> cache_store) {
-    cache_store_ = cache_store;
-    const auto host_tracker_allocator = dynamic_cast<TrackerAllocator *>(getHostAllocator());
-    if (host_tracker_allocator && cache_store) {
-        auto memory_util = cache_store->getMemoryUtil();
-        auto chunks = host_tracker_allocator->getChunks();
-        for (auto chunk : chunks) {
-            memory_util->regUserMr(chunk->ptr, chunk->size, false);
-        }
-    }
-}
+// void DeviceBase::setCacheStore(std::shared_ptr<rtp_llm::CacheStore> cache_store) {
+//     cache_store_ = cache_store;
+//     const auto host_tracker_allocator = dynamic_cast<TrackerAllocator *>(getHostAllocator());
+//     if (host_tracker_allocator && cache_store) {
+//         auto memory_util = cache_store->getMemoryUtil();
+//         auto chunks = host_tracker_allocator->getChunks();
+//         for (auto chunk : chunks) {
+//             memory_util->regUserMr(chunk->ptr, chunk->size, false);
+//         }
+//     }
+// }
 
-void DeviceBase::writeCacheStore(const AttentionModuleParams& params) {
-    auto& param = params.common;
-    if (param.warmup) {
-        return;
-    }
-    if (!param.pd_separation || param.context_batch_size == 0) {
-        return;
-    }
+// void DeviceBase::writeCacheStore(const AttentionModuleParams& params) {
+//     auto& param = params.common;
+//     if (param.warmup) {
+//         return;
+//     }
+//     if (!param.pd_separation || param.context_batch_size == 0) {
+//         return;
+//     }
 
-    FT_CHECK_WITH_INFO(param.cache_store_inputs.has_value()
-                        && param.cache_store_inputs->host_kv_cache_offset, "failed to get host_kv_cache_offset");
-    const auto max_blocks_per_batch = param.cache_store_inputs->host_kv_cache_offset->shape()[1];
-    const auto seq_size_per_block  = params.configs.tokens_per_block;
-    auto offset_addr = param.cache_store_inputs->host_kv_cache_offset->data<int32_t>();
-    auto k_cache_data = (uint64_t*)param.kv_cache->k_cache_buffer->data();
-    auto v_cache_data = (uint64_t*)param.kv_cache->v_cache_buffer->data();
-    auto k_scale_data = (uint64_t*)(param.kv_cache->k_scale_buffer ? param.kv_cache->k_scale_buffer->data() : nullptr);
-    auto v_scale_data = (uint64_t*)(param.kv_cache->v_scale_buffer ? param.kv_cache->v_scale_buffer->data() : nullptr);
+//     FT_CHECK_WITH_INFO(param.cache_store_inputs.has_value()
+//                         && param.cache_store_inputs->host_kv_cache_offset, "failed to get host_kv_cache_offset");
+//     const auto max_blocks_per_batch = param.cache_store_inputs->host_kv_cache_offset->shape()[1];
+//     const auto seq_size_per_block  = params.configs.tokens_per_block;
+//     auto offset_addr = param.cache_store_inputs->host_kv_cache_offset->data<int32_t>();
+//     auto k_cache_data = (uint64_t*)param.kv_cache->k_cache_buffer->data();
+//     auto v_cache_data = (uint64_t*)param.kv_cache->v_cache_buffer->data();
+//     auto k_scale_data = (uint64_t*)(param.kv_cache->k_scale_buffer ? param.kv_cache->k_scale_buffer->data() : nullptr);
+//     auto v_scale_data = (uint64_t*)(param.kv_cache->v_scale_buffer ? param.kv_cache->v_scale_buffer->data() : nullptr);
 
-    FT_CHECK_WITH_INFO(param.context_batch_size == param.request_pd_separation->size(), "size not same");
-    FT_CHECK_WITH_INFO(param.context_batch_size == param.request_id->size(),
-                        "context batch size and request id size is not same");
+//     FT_CHECK_WITH_INFO(param.context_batch_size == param.request_pd_separation->size(), "size not same");
+//     FT_CHECK_WITH_INFO(param.context_batch_size == param.request_id->size(),
+//                         "context batch size and request id size is not same");
 
-    for (size_t batch_id = 0; batch_id < param.context_batch_size; batch_id++) {
-        if (*(param.request_pd_separation->dataWithOffset<bool>(batch_id)) == false) {
-            continue;
-        }
-        FT_CHECK_WITH_INFO(param.cache_store_inputs.has_value()
-                            && param.cache_store_inputs->prefix_lengths_host
-                            && param.cache_store_inputs->input_lengths_host,
-                            "failed to get prefix_length_host and input_length_host for cache store");
-        FT_CHECK_WITH_INFO(param.cache_store_inputs->prefix_lengths_host->data<int>()[batch_id] % seq_size_per_block == 0,
-                            "prefix_length \% seq_size_per_block != 0");
-        int reuse_block_num = param.cache_store_inputs->prefix_lengths_host->data<int>()[batch_id] / seq_size_per_block;
-        int block_num = (param.cache_store_inputs->input_lengths_host->data<int>()[param.decoder_batch_size + batch_id]
-                            + seq_size_per_block - 1) / seq_size_per_block;
-        auto request_id = *(param.request_id->dataWithOffset<int64_t>(batch_id));
-        auto request_blocks = std::make_shared<RequestBlockBuffer>(std::to_string(request_id), createEvent());
-        for (size_t index = 0; index < block_num + reuse_block_num; index++) {
-            auto cache_key = makeCacheKey(param.cache_keys[batch_id * max_blocks_per_batch + index], param.layer_id);
-            auto block_id = *(offset_addr + (param.decoder_batch_size + batch_id) * max_blocks_per_batch + index);
-            void* k_addr = (void*)((int8_t*)k_cache_data + block_id * param.block_size);
-            void* v_addr = (void*)((int8_t*)v_cache_data + block_id * param.block_size);
-            std::shared_ptr<void> k_block_addr(k_addr, [](void* p) { });
-            std::shared_ptr<void> v_block_addr(v_addr, [](void* p) { });
-            request_blocks->addBlock("k_" + cache_key, k_block_addr, param.block_size, true, true);
-            request_blocks->addBlock("v_" + cache_key, v_block_addr, param.block_size, true, true);
-            if (k_scale_data) {
-                void* k_scale_addr = (void*)((int8_t*)k_scale_data + block_id * param.scale_block_size);
-                void* v_scale_addr = (void*)((int8_t*)v_scale_data + block_id * param.scale_block_size);
-                std::shared_ptr<void> k_scale_block_addr(k_scale_addr, [](void* p) { });
-                std::shared_ptr<void> v_scale_block_addr(v_scale_addr, [](void* p) { });
-                request_blocks->addBlock("k_scale" + cache_key, k_scale_block_addr, param.scale_block_size, true, true);
-                request_blocks->addBlock("v_scale" + cache_key, v_scale_block_addr, param.scale_block_size, true, true);
-            }
-        }
-        auto storeCallback = [layer_id = param.layer_id, request_id](bool success, CacheStoreErrorCode ec) {
-            if (!success) {
-                FT_LOG_WARNING("query [%ld], layer id [%d], "
-                               "call store kv cache failed, ec is %d, error msg is [%s]",
-                               request_id, layer_id, ec, ErrorCodeToString(transCacheStoreErrorCode(ec)).c_str());
-            }
-        };
-        cache_store_->store(request_blocks, storeCallback);
-    }
-}
+//     for (size_t batch_id = 0; batch_id < param.context_batch_size; batch_id++) {
+//         if (*(param.request_pd_separation->dataWithOffset<bool>(batch_id)) == false) {
+//             continue;
+//         }
+//         FT_CHECK_WITH_INFO(param.cache_store_inputs.has_value()
+//                             && param.cache_store_inputs->prefix_lengths_host
+//                             && param.cache_store_inputs->input_lengths_host,
+//                             "failed to get prefix_length_host and input_length_host for cache store");
+//         FT_CHECK_WITH_INFO(param.cache_store_inputs->prefix_lengths_host->data<int>()[batch_id] % seq_size_per_block == 0,
+//                             "prefix_length \% seq_size_per_block != 0");
+//         int reuse_block_num = param.cache_store_inputs->prefix_lengths_host->data<int>()[batch_id] / seq_size_per_block;
+//         int block_num = (param.cache_store_inputs->input_lengths_host->data<int>()[param.decoder_batch_size + batch_id]
+//                             + seq_size_per_block - 1) / seq_size_per_block;
+//         auto request_id = *(param.request_id->dataWithOffset<int64_t>(batch_id));
+//         auto request_blocks = std::make_shared<RequestBlockBuffer>(std::to_string(request_id), createEvent());
+//         for (size_t index = 0; index < block_num + reuse_block_num; index++) {
+//             auto cache_key = makeCacheKey(param.cache_keys[batch_id * max_blocks_per_batch + index], param.layer_id);
+//             auto block_id = *(offset_addr + (param.decoder_batch_size + batch_id) * max_blocks_per_batch + index);
+//             void* k_addr = (void*)((int8_t*)k_cache_data + block_id * param.block_size);
+//             void* v_addr = (void*)((int8_t*)v_cache_data + block_id * param.block_size);
+//             std::shared_ptr<void> k_block_addr(k_addr, [](void* p) { });
+//             std::shared_ptr<void> v_block_addr(v_addr, [](void* p) { });
+//             request_blocks->addBlock("k_" + cache_key, k_block_addr, param.block_size, true, true);
+//             request_blocks->addBlock("v_" + cache_key, v_block_addr, param.block_size, true, true);
+//             if (k_scale_data) {
+//                 void* k_scale_addr = (void*)((int8_t*)k_scale_data + block_id * param.scale_block_size);
+//                 void* v_scale_addr = (void*)((int8_t*)v_scale_data + block_id * param.scale_block_size);
+//                 std::shared_ptr<void> k_scale_block_addr(k_scale_addr, [](void* p) { });
+//                 std::shared_ptr<void> v_scale_block_addr(v_scale_addr, [](void* p) { });
+//                 request_blocks->addBlock("k_scale" + cache_key, k_scale_block_addr, param.scale_block_size, true, true);
+//                 request_blocks->addBlock("v_scale" + cache_key, v_scale_block_addr, param.scale_block_size, true, true);
+//             }
+//         }
+//         auto storeCallback = [layer_id = param.layer_id, request_id](bool success, CacheStoreErrorCode ec) {
+//             if (!success) {
+//                 FT_LOG_WARNING("query [%ld], layer id [%d], "
+//                                "call store kv cache failed, ec is %d, error msg is [%s]",
+//                                request_id, layer_id, ec, ErrorCodeToString(transCacheStoreErrorCode(ec)).c_str());
+//             }
+//         };
+//         cache_store_->store(request_blocks, storeCallback);
+//     }
+// }
 
 CloneOutput DeviceBase::clone(const CloneParams& params) {
     const auto& src = params.input;
@@ -195,12 +195,12 @@ CloneOutput DeviceBase::clone(const CloneParams& params) {
 }
 
 SelectOutput DeviceBase::select(const SelectParams& params) {
-    RUNTIME_ASSERT_OP_ARG(params.dim < params.input.shape().size(),
-                          "Select dim %ld out of range with input shape %s.",
-                          params.dim, params.input.debugString().c_str());
-    RUNTIME_ASSERT_OP_ARG(params.index.shape().size() == 1, "Select index must be 1D.");
-    RUNTIME_ASSERT_OP_ARG(params.index.type() == DataType::TYPE_INT32, "Select index must be int32.");
-    RUNTIME_ASSERT_OP_ARG(params.index.where() != MemoryType::MEMORY_GPU, "Select index must on CPU.");
+    // RUNTIME_ASSERT_OP_ARG(params.dim < params.input.shape().size(),
+    //                       "Select dim %ld out of range with input shape %s.",
+    //                       params.dim, params.input.debugString().c_str());
+    // RUNTIME_ASSERT_OP_ARG(params.index.shape().size() == 1, "Select index must be 1D.");
+    // RUNTIME_ASSERT_OP_ARG(params.index.type() == DataType::TYPE_INT32, "Select index must be int32.");
+    // RUNTIME_ASSERT_OP_ARG(params.index.where() != MemoryType::MEMORY_GPU, "Select index must on CPU.");
 
     const auto& src = params.input;
     const auto& idx_buf = params.index;
@@ -231,8 +231,8 @@ SelectOutput DeviceBase::select(const SelectParams& params) {
 }
 
 ConcatOutput DeviceBase::concat(const ConcatParams& params) {
-    RUNTIME_ASSERT_OP_ARG(params.dim == 0, "Concat only support dim 0, but got %lu.", params.dim);
-    RUNTIME_ASSERT_OP_ARG(params.inputs.size() > 0, "Concat requires at least 1 input.");
+    // RUNTIME_ASSERT_OP_ARG(params.dim == 0, "Concat only support dim 0, but got %lu.", params.dim);
+    // RUNTIME_ASSERT_OP_ARG(params.inputs.size() > 0, "Concat requires at least 1 input.");
     if (params.inputs.size() == 1) {
         return params.inputs[0];
     }
@@ -252,20 +252,20 @@ ConcatOutput DeviceBase::concat(const ConcatParams& params) {
     for (int i = 0; i < int(params.inputs.size()); i++) {
         const auto& input = params.inputs[i];
         const auto& shape = input->shape();
-        RUNTIME_ASSERT_OP_ARG(
-            shape.size() == concated_shape.size(),
-            "Concat input [%d] shape size %ld does not match concated shape size %lu.",
-            i, shape.size(), concated_shape.size());
+        // RUNTIME_ASSERT_OP_ARG(
+        //     shape.size() == concated_shape.size(),
+        //     "Concat input [%d] shape size %ld does not match concated shape size %lu.",
+        //     i, shape.size(), concated_shape.size());
         for (int j = 1; j < int(concated_shape.size()); j++) {
-            RUNTIME_ASSERT_OP_ARG(
-                shape[j] == concated_shape[j],
-                "Concat input [%d] shape[%d] %ld does not match concated shape[%d] %ld.",
-                i, j, shape[j], j, concated_shape[j]);
+            // RUNTIME_ASSERT_OP_ARG(
+            //     shape[j] == concated_shape[j],
+            //     "Concat input [%d] shape[%d] %ld does not match concated shape[%d] %ld.",
+            //     i, j, shape[j], j, concated_shape[j]);
         }
-        RUNTIME_ASSERT_OP_ARG(
-            input->type() == type,
-            "Concat input [%d] type %d does not match concated type %d.",
-            i, input->type(), type);
+        // RUNTIME_ASSERT_OP_ARG(
+        //     input->type() == type,
+        //     "Concat input [%d] type %d does not match concated type %d.",
+        //     i, input->type(), type);
 
         copy({concated->view(offset, (int64_t)shape[0]), *input});
         offset += shape[0];
@@ -274,8 +274,8 @@ ConcatOutput DeviceBase::concat(const ConcatParams& params) {
 }
 
 LossOutput DeviceBase::loss(const LossParams& params) {
-    RUNTIME_ASSERT_OP_ARG(params.logits.where() == params.labels.where(), "logits and labels must be same device, but got %d and %d.", (int)params.logits.where(), (int)params.labels.where());
-    RUNTIME_ASSERT_OP_ARG(params.logits.shape()[0] == params.labels.shape()[0], "logits and labels must be same dim0, but got %d and %d.", (int)params.logits.shape()[0], (int)params.labels.shape()[0]);
+    // RUNTIME_ASSERT_OP_ARG(params.logits.where() == params.labels.where(), "logits and labels must be same device, but got %d and %d.", (int)params.logits.where(), (int)params.labels.where());
+    // RUNTIME_ASSERT_OP_ARG(params.logits.shape()[0] == params.labels.shape()[0], "logits and labels must be same dim0, but got %d and %d.", (int)params.logits.shape()[0], (int)params.labels.shape()[0]);
     torch::Tensor logits = Buffer2torchTensor(params.logits, false);
     torch::Tensor labels = Buffer2torchTensor(params.labels, false).toType(torch::kInt64);
     torch::Tensor output;
@@ -301,7 +301,7 @@ MaskOutput DeviceBase::attentionMask(const MaskParams& params) {
         }
     }
     if (params.prefix_lengths.size()) {
-        FT_CHECK(int(params.prefix_lengths.size()) == batch_size);
+        // FT_CHECK(int(params.prefix_lengths.size()) == batch_size);
         const int *prefix_lengths = params.prefix_lengths.data<int32_t>();
         auto max_reuse_length = *std::max_element(prefix_lengths, prefix_lengths + batch_size);
         attention_mask = torch::cat({attention_mask, torch::zeros({(int)batch_size, max_input_seq_len, max_reuse_length}).to(torch_type)}, -1);
@@ -316,15 +316,15 @@ MaskOutput DeviceBase::attentionMask(const MaskParams& params) {
 }
 
 MultimodalEmbeddingOutput DeviceBase::multimodalEmbedding(const MultimodalEmbeddingParams& params) {
-    RUNTIME_ASSERT_OP_ARG(params.multimodal_locs, "no multimodal input location found");
+    // RUNTIME_ASSERT_OP_ARG(params.multimodal_locs, "no multimodal input location found");
     const auto& embeddings = params.word_embeddings;
     const auto& features = params.multimodal_features.value().get();
     const auto& multimodal_locs = params.multimodal_locs.value().get();
     const auto mm_num = features.size();
 
-    RUNTIME_ASSERT_OP_ARG(
-        embeddings->typeSize() == features[0]->typeSize(),
-        "type size of embeddings and multimodal features should be equal.");
+    // RUNTIME_ASSERT_OP_ARG(
+    //     embeddings->typeSize() == features[0]->typeSize(),
+    //     "type size of embeddings and multimodal features should be equal.");
 
     for (int i = 0; i < mm_num; ++i) {
         auto& feature = features[i];

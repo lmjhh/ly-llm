@@ -1,4 +1,4 @@
-#include "core/Buffer.h"
+#include "core/buffer.h"
 
 #include <numeric>
 #include <stdexcept>
@@ -21,7 +21,7 @@ Buffer::Buffer(const MemoryType where,
     {}
 
 Buffer::~Buffer() {
-    FT_CHECK_WITH_INFO(view_count_ == 0, "Buffer::~Buffer: view_count_ != 0: " + std::to_string(view_count_));
+    // FT_CHECK_WITH_INFO(view_count_ == 0, "Buffer::~Buffer: view_count_ != 0: " + std::to_string(view_count_));
     if (deleter_) {
         deleter_(this);
     }
@@ -49,7 +49,7 @@ void* Buffer::data() const {
 }
 
 void* Buffer::dataWithOffset(size_t offset) const {
-    FT_CHECK(type_ != DataType::TYPE_INVALID);
+    // FT_CHECK(type_ != DataType::TYPE_INVALID);
     return static_cast<char*>(data_) + offset * getTypeSize(type_);
 }
 
@@ -75,9 +75,9 @@ size_t Buffer::sizeBytes() const {
 void Buffer::updateShape(const std::vector<size_t>& shape) {
     size_t new_shape_size = std::accumulate(shape.begin(), shape.end(), (size_t)1,
                                             std::multiplies<size_t>());
-    FT_CHECK_WITH_INFO(
-        new_shape_size == size(),
-        "reshape shape size not match: %d vs %d", new_shape_size, size());
+    // FT_CHECK_WITH_INFO(
+    //     new_shape_size == size(),
+    //     "reshape shape size not match: %d vs %d", new_shape_size, size());
     shape_ = shape;
 }
 
@@ -94,9 +94,9 @@ Buffer::DeleterFuncType Buffer::getSubBufferDeleter() const {
 Buffer Buffer::reshape(const std::vector<size_t>& shape) const {
     size_t new_shape_size = std::accumulate(shape.begin(), shape.end(), (size_t)1,
                                             std::multiplies<size_t>());
-    FT_CHECK_WITH_INFO(
-        new_shape_size == size(),
-        "reshape shape size not match: %d vs %d", new_shape_size, size());
+    // FT_CHECK_WITH_INFO(
+    //     new_shape_size == size(),
+    //     "reshape shape size not match: %d vs %d", new_shape_size, size());
     return Buffer(where_, type_, shape, data_, getSubBufferDeleter());
 }
 
@@ -108,9 +108,9 @@ Buffer Buffer::view(size_t offset, size_t size) const {
     if (offset == 0 && size == shape_[0]) {
         return Buffer(where_, type_, shape_, data_, getSubBufferDeleter());
     } else {
-        FT_CHECK_WITH_INFO(offset + size <= this->shape_[0],
-                           "view offset %d + size %d out of range with buffer[%s]",
-                           offset, size, debugString().c_str());
+        // FT_CHECK_WITH_INFO(offset + size <= this->shape_[0],
+        //                    "view offset %d + size %d out of range with buffer[%s]",
+        //                    offset, size, debugString().c_str());
         auto new_shape = shape_;
         new_shape[0] = size;
         const auto offset_size = this->size() / shape_[0] * offset;

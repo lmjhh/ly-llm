@@ -70,9 +70,9 @@ public:
     template<typename T>
     inline T* data() const {
         static_assert(!std::is_same<T, void>::value);
-        FT_CHECK_WITH_INFO(
-            type_ == getTensorType<T>(),
-            "get data type %d not match buffer type %d", getTensorType<T>(), type_);
+        // FT_CHECK_WITH_INFO(
+        //     type_ == getTensorType<T>(),
+        //     "get data type %d not match buffer type %d", getTensorType<T>(), type_);
         return static_cast<T*>(data_);
     }
 

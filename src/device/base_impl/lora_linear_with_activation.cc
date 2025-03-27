@@ -1,5 +1,5 @@
-#include "devices/device_base.h"
-#include "devices/op_data.h"
+#include "device/device_base.h"
+#include "device/op_data.h"
 
 using namespace std;
 

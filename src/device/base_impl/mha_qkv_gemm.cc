@@ -31,14 +31,14 @@ BufferPtr DeviceBase::mhaQKVGemm(const AttentionLayerParams& params) {
     } else {
         qkv = loraLinear(LoraLinearParams(qkv_gemm_params, params.common.lora_input.qkv_lora_input)).output;
     }
-    printBufferData(*qkv, "qkv");
+    // printBufferData(*qkv, "qkv");
 
     if (params.weights.q_norm_weight) {
         auto after_q_norm = layernorm(LayernormParams(
             qkv, *params.weights.q_norm_weight, params.ln_params.eps, params.ln_params.norm_type, 0, qkv_merged_size));
 
         qkv = std::move(after_q_norm.output);
-        printBufferData(*qkv, "qkv_after_q_norm");
+        // printBufferData(*qkv, "qkv_after_q_norm");
     }
 
     if (params.weights.k_norm_weight) {
@@ -50,7 +50,7 @@ BufferPtr DeviceBase::mhaQKVGemm(const AttentionLayerParams& params) {
                                                       qkv_merged_size));
 
         qkv = std::move(after_k_norm.output);
-        printBufferData(*qkv, "qkv_after_k_norm");
+        // printBufferData(*qkv, "qkv_after_k_norm");
     }
 
     return qkv;
