@@ -18,7 +18,6 @@ endif()
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
 # 查找 PyTorch 的 CMake 配置
-set(CMAKE_PREFIX_PATH /Users/lianyu/libtorch)
 find_package(Torch REQUIRED)
 find_package(Python COMPONENTS Development REQUIRED)
 
