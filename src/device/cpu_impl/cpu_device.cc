@@ -2,14 +2,14 @@
 // #include "device/DeviceFactory.h"
 #include "core/allocator.h"
 #include "core/cpu_allocator.h"
-// #include "xlytransformer/include/layers_mlp.h"
-// #include "xlytransformer/include/layers_attention.h"
-// #include "xlytransformer/include/layers_norm.h"
-// #include "xlytransformer/include/layers_token_embedding.h"
-// #include "xlytransformer/include/layers_gemm.h"
+#include "xft/layers_mlp.h"
+#include "xft/layers_attention.h"
+#include "xft/layers_norm.h"
+#include "xft/layers_token_embedding.h"
+#include "xft/layers_gemm.h"
 #include <cstring>
 #include <cmath>
-// #include <immintrin.h>
+#include <immintrin.h>
 
 #define BLOCKSIZE_512b_FP32 16  // 512 bit include 16 * 32bit
 #define BLOCKSIZE_512b_BF16 32  // 512 bit include 32 * 16bit

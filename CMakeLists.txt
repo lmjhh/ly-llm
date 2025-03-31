@@ -21,21 +21,24 @@ message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 find_package(Torch REQUIRED)
 find_package(Python COMPONENTS Development REQUIRED)
 
+set(THIRD_PATH "src/third")
+set(XFT_PATH ${THIRD_PATH}/xft/)
+
 file(GLOB_RECURSE SRC_FILES "src/*.cc")
 
 # 添加可执行文件
-add_executable(${PROJECT_NAME} ${SRC_FILES})
+add_executable(${PROJECT_NAME} src/main.cpp ${SRC_FILES})
 
 # 添加头文件目录
 target_include_directories(${PROJECT_NAME} PRIVATE src)
 # 将 PyTorch 的头文件路径添加到目标
-target_include_directories(${PROJECT_NAME} PRIVATE ${TORCH_INCLUDE_DIRS} ${Python_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PRIVATE ${TORCH_INCLUDE_DIRS} ${Python_INCLUDE_DIRS} ${XFT_PATH}/include)
 
-# 链接 PyTorch 库
-#target_link_libraries(my_program PRIVATE ${TORCH_LIBRARIES})
+# 链接 python 库
+target_link_libraries(${PROJECT_NAME} PRIVATE ${TORCH_LIBRARIES} ${Python_LIBRARIES} ${XFT_PATH}/include/lib)
 
 # 添加编译选项
-# target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -O2)
+target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -O3 -mavx512f -mavx512bw -mavx512vl)
 
 # 添加预处理器定义
 # target_compile_definitions(${PROJECT_NAME} PRIVATE MY_DEFINE=1)
