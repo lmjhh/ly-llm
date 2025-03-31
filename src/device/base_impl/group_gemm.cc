@@ -4,7 +4,7 @@ namespace lytransformer {
 
 GroupedGemmOutput DeviceBase::groupedGemm(const GroupedGemmParams& params) {
     // FT_LOG_DEBUG("use default group gemm");
-    params.check();
+    // params.check();
     size_t num = params.A.size();
     std::vector<BufferPtr> output(num);
     for (int i = 0; i < num; i++) {

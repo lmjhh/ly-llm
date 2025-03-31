@@ -1,4 +1,4 @@
-# 设置 CMake 的最低版本要求
+ 设置 CMake 的最低版本要求
 cmake_minimum_required(VERSION 3.10)
 
 # 定义项目名称和版本
@@ -8,6 +8,7 @@ project(ly-llm VERSION 1.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)  # 禁用编译器特定的扩展（如 GNU 扩展）
+set(CMAKE_CXX_COMPILER "/usr/bin/g++")
 
 # 设置构建类型（如果未指定，默认为 Release）
 if(NOT CMAKE_BUILD_TYPE)
@@ -22,7 +23,17 @@ find_package(Torch REQUIRED)
 find_package(Python COMPONENTS Development REQUIRED)
 
 set(THIRD_PATH "src/third")
-set(XFT_PATH ${THIRD_PATH}/xft/)
+# 设置 xfastertransformer 的路径
+set(XFT_PATH "/root/miniconda3/envs/ly/lib/python3.12/site-packages/xfastertransformer-devel")
+
+# 查找动态库
+find_library(XFT_LIBRARY NAMES xfastertransformer PATHS ${XFT_PATH}/lib NO_DEFAULT_PATH)
+if (NOT XFT_LIBRARY)
+    message(FATAL_ERROR "xfastertransformer library not found!")
+endif()
+
+# 打印找到的库路径
+message(STATUS "Found XFT_LIBRARY: ${XFT_LIBRARY}")
 
 file(GLOB_RECURSE SRC_FILES "src/*.cc")
 
@@ -35,7 +46,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE src)
 target_include_directories(${PROJECT_NAME} PRIVATE ${TORCH_INCLUDE_DIRS} ${Python_INCLUDE_DIRS} ${XFT_PATH}/include)
 
 # 链接 python 库
-target_link_libraries(${PROJECT_NAME} PRIVATE ${TORCH_LIBRARIES} ${Python_LIBRARIES} ${XFT_PATH}/include/lib)
+target_link_libraries(${PROJECT_NAME} PRIVATE ${TORCH_LIBRARIES} ${Python_LIBRARIES} stdc++ ${XFT_LIBRARY})
 
 # 添加编译选项
 target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -O3 -mavx512f -mavx512bw -mavx512vl)
